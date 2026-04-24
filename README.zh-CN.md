@@ -33,8 +33,7 @@ cd music-cli
 bash setup.sh
 ```
 
-需要 [yt-dlp](https://github.com/yt-dlp/yt-dlp)。歌词嵌入需要 `python3` 和
-[mutagen](https://mutagen.readthedocs.io/)。[ffmpeg](https://ffmpeg.org/) 可选。
+需要 [yt-dlp](https://github.com/yt-dlp/yt-dlp)。[ffmpeg](https://ffmpeg.org/) 可选。
 
 ## 使用
 

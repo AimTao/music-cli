@@ -33,8 +33,7 @@ cd music-cli
 bash setup.sh
 ```
 
-Requires [yt-dlp](https://github.com/yt-dlp/yt-dlp). Lyrics embedding requires `python3` with
-[`mutagen`](https://mutagen.readthedocs.io/) installed. [ffmpeg](https://ffmpeg.org/) is optional.
+Requires [yt-dlp](https://github.com/yt-dlp/yt-dlp). [ffmpeg](https://ffmpeg.org/) is optional.
 
 ## Usage
 

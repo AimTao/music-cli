@@ -29,8 +29,6 @@ export const doctorCommand = new Command('doctor')
       node: { version: process.version, ok: true },
       ytdlp: { installed: false },
       ffmpeg: { installed: false },
-      python: { installed: false },
-      mutagen: { installed: false },
       network: {},
       disk: { free: '', ok: false },
     };
@@ -43,18 +41,6 @@ export const doctorCommand = new Command('doctor')
     try {
       result.ffmpeg.version = execSync('ffmpeg -version', { encoding: 'utf-8' }).split('\n')[0];
       result.ffmpeg.installed = true;
-    } catch {}
-
-    try {
-      result.python.version = execSync('python3 --version', { encoding: 'utf-8' }).trim();
-      result.python.installed = true;
-    } catch {}
-
-    try {
-      result.mutagen.version = execSync('python3 -c "import mutagen; print(mutagen.version_string)"', {
-        encoding: 'utf-8',
-      }).trim();
-      result.mutagen.installed = true;
     } catch {}
 
     const hosts = ['youtube.com', 'bilibili.com', 'soundcloud.com', 'music.163.com'];
@@ -76,8 +62,6 @@ export const doctorCommand = new Command('doctor')
       console.log(`  ${result.node.ok ? '✓' : '✗'} ${t('doctor.node')} ${result.node.version}`);
       console.log(`  ${result.ytdlp.installed ? '✓' : '✗'} ${t('doctor.ytdlp')} ${result.ytdlp.version || t('doctor.not_installed')}`);
       console.log(`  ${result.ffmpeg.installed ? '✓' : '✗'} ${t('doctor.ffmpeg')} ${result.ffmpeg.installed ? t('doctor.installed') : t('doctor.not_installed')}`);
-      console.log(`  ${result.python.installed ? '✓' : '✗'} ${t('doctor.python')} ${result.python.version || t('doctor.not_installed')}`);
-      console.log(`  ${result.mutagen.installed ? '✓' : '✗'} ${t('doctor.mutagen')} ${result.mutagen.version || t('doctor.not_installed')}`);
       console.log(`\n${chalk.cyan('🌐')} ${t('doctor.network')}:`);
       for (const [host, info] of Object.entries(result.network)) {
         const status = info.ok ? `✓ ${info.latency}ms` : '✗';

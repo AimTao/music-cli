@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as https from 'https';
 import * as http from 'http';
-import { execFileSync } from 'child_process';
+import * as NodeID3 from 'node-id3';
 import { LyricsResult } from '../types';
 
 function fetch(url: string): Promise<string> {
@@ -86,53 +86,12 @@ export async function embedLyricsToMp3(mp3Path: string, lrcPath: string, title?:
     const lyricsContent = stripLrcTimestamps(fs.readFileSync(lrcPath, 'utf-8')).trim();
     if (!lyricsContent) return false;
 
-    const pyScript = `
-import sys, json
-from mutagen.id3 import ID3, USLT, TIT2, TPE1, ID3NoHeaderError
+    const tags: any = { unsynchronisedLyrics: { language: 'chi', text: lyricsContent } };
+    if (title) tags.title = title;
+    if (artist) tags.artist = artist;
 
-args = json.loads(sys.argv[1])
-mp3 = args['mp3']
-lyrics = args['lyrics']
-title = args.get('title', '')
-artist = args.get('artist', '')
-
-try:
-    tags = ID3(mp3)
-except ID3NoHeaderError:
-    tags = ID3()
-
-for key in list(tags.keys()):
-    if key.startswith('USLT') or key.startswith('SYLT') or key in {
-        'TXXX:LYRICS',
-        'TXXX:UNSYNCEDLYRICS',
-        'TXXX:SYNCEDLYRICS',
-        'TXXX:lyrics',
-        'TXXX:lyrics-chi',
-    }:
-        del tags[key]
-
-tags.add(USLT(encoding=1, lang='chi', desc='', text=lyrics))
-if title:
-    tags.add(TIT2(encoding=1, text=title))
-if artist:
-    tags.add(TPE1(encoding=1, text=artist))
-tags.save(mp3, v2_version=3)
-print('ok')
-`;
-
-    const args = JSON.stringify({
-      mp3: mp3Path,
-      lyrics: lyricsContent,
-      ...(title ? { title } : {}),
-      ...(artist ? { artist } : {}),
-    });
-
-    const result = execFileSync('python3', ['-c', pyScript, args], {
-      encoding: 'utf-8',
-      timeout: 10000,
-    }).trim();
-
-    if (result !== 'ok') return false;
+    const success = NodeID3.write(tags, mp3Path);
+    if (success instanceof Error) return false;
 
     fs.unlinkSync(lrcPath);
     const lyricsDir = path.dirname(lrcPath);

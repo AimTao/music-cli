@@ -238,52 +238,42 @@ if command -v node &>/dev/null && [ -f package.json ]; then
   " 2>/dev/null)
 fi
 
-# 检查是否已安装
-if [ -d node_modules ] && [ ${#DEPS_LIST[@]} -gt 0 ]; then
-  step "${T_CHECKING}"
-  npm install --silent 2>/dev/null
-  done_step "${T_INSTALLED}"
+show_deps() {
+  local sym="$1"
+  local color="$2"
   for line in "${DEPS_LIST[@]}"; do
     type="${line%%:*}"
     spec="${line#*:}"
     name="${spec%@*}"
     ver="${spec##*@}"
     if [ "$type" = "dep" ]; then
-      printf "    ${DIM}${GRN}●${R}  ${DIM}%-24s %s${R}\n" "$name" "$ver"
+      printf "    ${DIM}${color}${sym}${R}  ${DIM}%-24s %s${R}\n" "$name" "$ver"
     else
-      printf "    ${DIM}${GRN}●${R}  ${DIM}%-24s %s  (dev)${R}\n" "$name" "$ver"
+      printf "    ${DIM}${color}${sym}${R}  ${DIM}%-24s %s  (dev)${R}\n" "$name" "$ver"
     fi
   done
+}
+
+# 检查是否需要安装：node_modules 不存在或 package.json 比 node_modules 新
+NEED_INSTALL=true
+if [ -d node_modules ] && [ -f package-lock.json ]; then
+  if [ package.json -ot node_modules ] && [ package-lock.json -ot node_modules ]; then
+    NEED_INSTALL=false
+  fi
+fi
+
+if [ "$NEED_INSTALL" = false ]; then
+  step "${T_CHECKING}"
+  done_step "${T_INSTALLED}"
+  show_deps "●" "${GRN}"
 else
   step "${T_INSTALL}"
   echo ""
-  # 先显示 ○ 状态
-  for line in "${DEPS_LIST[@]}"; do
-    type="${line%%:*}"
-    spec="${line#*:}"
-    name="${spec%@*}"
-    ver="${spec##*@}"
-    if [ "$type" = "dep" ]; then
-      printf "    ${DIM}${YLW}○${R}  ${DIM}%-24s %s${R}\n" "$name" "$ver"
-    else
-      printf "    ${DIM}${YLW}○${R}  ${DIM}%-24s %s  (dev)${R}\n" "$name" "$ver"
-    fi
-  done
+  show_deps "○" "${YLW}"
   npm install --silent 2>/dev/null
-  # 回写 ● 状态：光标上移 N 行覆写
   N=${#DEPS_LIST[@]}
   printf "\033[${N}A"
-  for line in "${DEPS_LIST[@]}"; do
-    type="${line%%:*}"
-    spec="${line#*:}"
-    name="${spec%@*}"
-    ver="${spec##*@}"
-    if [ "$type" = "dep" ]; then
-      printf "    ${DIM}${GRN}●${R}  ${DIM}%-24s %s${R}\n" "$name" "$ver"
-    else
-      printf "    ${DIM}${GRN}●${R}  ${DIM}%-24s %s  (dev)${R}\n" "$name" "$ver"
-    fi
-  done
+  show_deps "●" "${GRN}"
   done_step "${T_INSTALLED}"
 fi
 
@@ -299,7 +289,10 @@ else
 fi
 
 step "${T_LINK}"
-if npm link --silent 2>/dev/null; then
+LINK_TARGET="$(npm root -g 2>/dev/null)/music-cli"
+if [ -L "$LINK_TARGET" ]; then
+  done_step "${T_LINKED}"
+elif npm link --silent 2>/dev/null; then
   done_step "${T_LINKED}"
 else
   printf "\r  ${YLW}●${R}  ${T_LINK_TRY}\n"

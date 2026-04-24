@@ -44,8 +44,6 @@ export interface DoctorResult {
   node: { version: string; ok: boolean };
   ytdlp: ToolCheck;
   ffmpeg: ToolCheck;
-  python: ToolCheck;
-  mutagen: ToolCheck;
   network: Record<string, { ok: boolean; latency?: number; error?: string }>;
   disk: { free: string; ok: boolean };
 }
