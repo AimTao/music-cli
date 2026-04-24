@@ -37,14 +37,6 @@ export function loadConfig(): Config {
   return config;
 }
 
-export function saveConfig(config: Partial<Config>): void {
-  const current = loadConfig();
-  const merged = { ...current, ...config };
-  const configFile = getConfigFile();
-
-  fs.writeFileSync(configFile, JSON.stringify(merged, null, 2), 'utf-8');
-}
-
 export function getConfigPath(): string {
   return getConfigFile();
 }

@@ -5,6 +5,7 @@ import * as https from 'https';
 import * as http from 'http';
 import * as NodeID3 from 'node-id3';
 import { LyricsResult } from '../types';
+import { sanitizeFilename } from '../utils/ytdlp';
 
 function fetch(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -62,7 +63,7 @@ export async function getLyrics(
   fs.mkdirSync(lyricsDir, { recursive: true });
 
   const query = artist ? `${songName} - ${artist}` : songName;
-  const safeName = query.replace(/[<>:"/\\|?*]/g, '_').substring(0, 200);
+  const safeName = sanitizeFilename(query);
   const lrcPath = path.join(lyricsDir, `${safeName}.lrc`);
 
   if (fs.existsSync(lrcPath)) {

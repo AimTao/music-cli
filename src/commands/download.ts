@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import * as fs from 'fs';
 import { loadConfig } from '../utils/config';
 import { downloadSong, downloadBatch } from '../core/downloader';
 import { outputJSON } from '../utils/output';
