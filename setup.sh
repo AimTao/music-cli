@@ -224,7 +224,6 @@ echo ""
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# 收集依赖列表
 DEPS_LIST=()
 if command -v node &>/dev/null && [ -f package.json ]; then
   while IFS= read -r line; do
@@ -233,8 +232,8 @@ if command -v node &>/dev/null && [ -f package.json ]; then
     const pkg = require('./package.json');
     const deps = Object.entries(pkg.dependencies || {});
     const dev = Object.entries(pkg.devDependencies || {});
-    deps.forEach(([n,v]) => console.log('dep:' + n + '@' + v));
-    dev.forEach(([n,v]) => console.log('dev:' + n + '@' + v));
+    deps.forEach(([n,v]) => console.log('dep\t' + n + '\t' + v));
+    dev.forEach(([n,v]) => console.log('dev\t' + n + '\t' + v));
   " 2>/dev/null)
 fi
 
@@ -242,10 +241,7 @@ show_deps() {
   local sym="$1"
   local color="$2"
   for line in "${DEPS_LIST[@]}"; do
-    type="${line%%:*}"
-    spec="${line#*:}"
-    name="${spec%@*}"
-    ver="${spec##*@}"
+    IFS=$'\t' read -r type name ver <<< "$line"
     if [ "$type" = "dep" ]; then
       printf "    ${DIM}${color}${sym}${R}  ${DIM}%-24s %s${R}\n" "$name" "$ver"
     else
@@ -262,6 +258,8 @@ if [ -d node_modules ] && [ -f package-lock.json ]; then
   fi
 fi
 
+N=${#DEPS_LIST[@]}
+
 if [ "$NEED_INSTALL" = false ]; then
   step "${T_CHECKING}"
   done_step "${T_INSTALLED}"
@@ -271,10 +269,9 @@ else
   echo ""
   show_deps "○" "${YLW}"
   npm install --silent 2>/dev/null
-  N=${#DEPS_LIST[@]}
-  printf "\033[${N}A"
-  show_deps "●" "${GRN}"
+  printf "\033[$((N + 1))A"
   done_step "${T_INSTALLED}"
+  show_deps "●" "${GRN}"
 fi
 
 step "${T_COMPILE}"
@@ -289,7 +286,7 @@ else
 fi
 
 step "${T_LINK}"
-LINK_TARGET="$(npm root -g 2>/dev/null)/music-cli"
+LINK_TARGET="$(npm root -g 2>/dev/null)/@aimtao/music-cli"
 if [ -L "$LINK_TARGET" ]; then
   done_step "${T_LINKED}"
 elif npm link --silent 2>/dev/null; then

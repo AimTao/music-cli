@@ -10,19 +10,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build
         run: npm run build
-      
+
+      - name: Install yt-dlp
+        run: pip install yt-dlp
+
+      - name: Smoke test
+        run: |
+          OUTPUT=$(node bin/music-cli.js download "Never Gonna Give You Up" "Rick Astley" --json 2>&1) || true
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q '"success"'
+
       - name: Publish to npm
-        run: npm publish
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          npm publish --access public
+
+      - name: Create GitHub Release
+        run: gh release create ${{ github.ref_name }} --generate-notes
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

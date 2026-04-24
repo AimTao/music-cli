@@ -1,7 +1,7 @@
 # music-cli
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![npm](https://img.shields.io/npm/v/music-cli.svg)](https://www.npmjs.com/package/music-cli)
+[![npm](https://img.shields.io/npm/v/@aimtao/music-cli.svg)](https://www.npmjs.com/package/@aimtao/music-cli)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D16-green.svg)](https://nodejs.org/)
 
 > 🎵 面向 Agent 的音乐 CLI — JSON 输出、批量管道、零配置
@@ -22,7 +22,7 @@
 ## 安装
 
 ```bash
-npm install -g music-cli
+npm install -g @aimtao/music-cli
 ```
 
 或本地编译：

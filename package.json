@@ -1,5 +1,5 @@
 {
-  "name": "music-cli",
+  "name": "@aimtao/music-cli",
   "version": "1.0.0",
   "description": "Agent-ready music CLI — JSON output, batch pipe, zero config",
   "main": "./dist/index.js",
