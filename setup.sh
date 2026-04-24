@@ -56,7 +56,9 @@ if [[ "$LANG_ENV" == zh* ]]; then
   T_COMPILED="编译成功"
   T_LINK="创建全局链接..."
   T_LINKED="全局链接已创建"
+  T_LINK_EXISTS="已存在旧链接，覆盖..."
   T_LINK_TRY="权限不足，尝试 sudo..."
+  T_LINK_FAIL="链接失败"
   T_READY="安装完成"
   T_READY_HINT="运行 music-cli --help 开始使用"
   T_EXAMPLE="试试看:"
@@ -80,7 +82,9 @@ else
   T_COMPILED="Compiled successfully"
   T_LINK="Linking globally..."
   T_LINKED="Linked"
+  T_LINK_EXISTS="Old link exists, overwriting..."
   T_LINK_TRY="Trying with sudo..."
+  T_LINK_FAIL="Link failed"
   T_READY="Ready."
   T_READY_HINT="Run music-cli --help to get started."
   T_EXAMPLE="Try it:"
@@ -287,14 +291,25 @@ fi
 
 step "${T_LINK}"
 LINK_TARGET="$(npm root -g 2>/dev/null)/@aimtao/music-cli"
+BIN_TARGET="$(npm prefix -g 2>/dev/null)/bin/music-cli"
 if [ -L "$LINK_TARGET" ]; then
   done_step "${T_LINKED}"
 elif npm link --silent 2>/dev/null; then
   done_step "${T_LINKED}"
+elif [ -e "$BIN_TARGET" ]; then
+  printf "\r  ${YLW}●${R}  ${T_LINK_EXISTS}\n"
+  if npm link --force --silent 2>/dev/null; then
+    done_step "${T_LINKED}"
+  else
+    fail_step "${T_LINK_FAIL}"
+  fi
 else
   printf "\r  ${YLW}●${R}  ${T_LINK_TRY}\n"
-  sudo npm link --silent 2>/dev/null
-  done_step "${T_LINKED}"
+  if sudo npm link --silent 2>/dev/null; then
+    done_step "${T_LINKED}"
+  else
+    fail_step "${T_LINK_FAIL}"
+  fi
 fi
 
 # ── Done ──
