@@ -2,11 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Config, Song, DownloadResult } from '../types';
 import { downloadFromSource, sanitizeFilename } from '../utils/ytdlp';
+import { downloadFromBilibiliApi } from '../utils/bilibili-api';
 import { getLyrics, embedLyricsToMp3 } from './lyrics';
 import { t } from '../utils/i18n';
 import * as chalk from '../utils/chalk';
 
-const SOURCE_ORDER = ['youtube', 'bilibili', 'soundcloud', 'bandcamp', 'netease'];
+const SOURCE_ORDER = ['bilibili-api', 'youtube', 'bilibili', 'soundcloud', 'bandcamp', 'netease'];
 
 const SOURCE_EMOJI: Record<string, string> = {
   youtube: '📺',
@@ -14,6 +15,7 @@ const SOURCE_EMOJI: Record<string, string> = {
   soundcloud: '☁️',
   bandcamp: '🎵',
   netease: '🎶',
+  'bilibili-api': '🔧',
   cache: '💾',
 };
 
@@ -64,18 +66,24 @@ export async function downloadSong(
   }
 
   const startTime = Date.now();
+  const sources = config.sources && config.sources.length > 0 ? config.sources : SOURCE_ORDER;
 
   if (!quiet) {
     console.log(`\n${chalk.cyan('🎵')} ${chalk.bold(t('download.downloading'))}: ${query}`);
-    console.log(`${chalk.gray('├─')} ${t('download.trying')}: ${SOURCE_ORDER.slice(0, config.concurrency).join(', ')}`);
+    console.log(`${chalk.gray('├─')} ${t('download.trying')}: ${sources.slice(0, config.concurrency).join(', ')}`);
   }
 
-  for (let i = 0; i < SOURCE_ORDER.length; i++) {
-    const source = SOURCE_ORDER[i];
+  for (let i = 0; i < sources.length; i++) {
+    const source = sources[i];
     if (!quiet) {
       console.log(`${chalk.gray('├─')} ${chalk.yellow('⏳')} ${t('download.trying')} ${source}...`);
     }
-    const success = await downloadFromSource(source, query, outputPath, config.timeout);
+    let success: boolean;
+    if (source === 'bilibili-api') {
+      success = await downloadFromBilibiliApi(query, outputPath, config.timeout);
+    } else {
+      success = await downloadFromSource(source, query, outputPath, config.timeout);
+    }
     if (success) {
       const elapsed = Date.now() - startTime;
       return await finalizeDownload(config, song, outputPath, source, elapsed, quiet);
@@ -89,7 +97,7 @@ export async function downloadSong(
   return {
     success: false,
     error: t('download.failed'),
-    tried: SOURCE_ORDER,
+    tried: sources,
   };
 }
 

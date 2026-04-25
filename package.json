@@ -1,6 +1,6 @@
 {
   "name": "@aimtao/music-cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Agent-ready music CLI — JSON output, batch pipe, zero config",
   "main": "./dist/index.js",
   "bin": {

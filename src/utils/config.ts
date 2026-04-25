@@ -7,8 +7,8 @@ const DEFAULT_OUTPUT_DIR = path.join(os.homedir(), 'Downloads', 'music-cli');
 
 const DEFAULT_CONFIG: Config = {
   outputDir: DEFAULT_OUTPUT_DIR,
-  sources: ['youtube', 'bilibili', 'soundcloud', 'bandcamp', 'netease'],
-  timeout: 10,
+  sources: ['bilibili-api', 'youtube', 'bilibili', 'soundcloud', 'bandcamp', 'netease'],
+  timeout: 8,
   concurrency: 2,
   embedLyrics: true,
 };
